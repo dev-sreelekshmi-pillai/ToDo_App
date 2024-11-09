@@ -1,27 +1,74 @@
 <div class="text-bg-dark p-4 content">
   <header class="container text-bg-light p-2 text-center middle">
-    <div class="title row">
+    <div class="title rounded row">
       <h1>ToDo App</h1>
       <p>Advance version with filter</p>
     </div>
   </header>
   <main class="container" id="main-content">
     <section role="form" class="addtodo row mb-3" aria-labelledby="todo-form">
-      <form action="" method="post">
+      <form #myForm="ngForm" >
         <div class="row mb-3 p-2">
-          <textarea name="new-task" id="new-task" cols="30" rows="3" class="form-control"
-            placeholder="Add a new task"></textarea>
+          <input
+            required
+            type="text"
+            name="taskname"
+            id="taskname"
+            placeholder="Add a new task : Name"
+            class="form-control"
+            [(ngModel)]="newTask.taskName"
+          />
+        </div>
+        <div class="row mb-3 p-2">
+          <textarea
+            name="taskdesc"
+            id="taskdesc"
+            cols="30"
+            rows="3"
+            class="form-control"
+            placeholder="Task Description"
+            [(ngModel)]="newTask.taskDescription"
+          ></textarea>
         </div>
         <div class="row g-3">
           <div class="col-auto">
-            <input class="form-control" type="date" name="task-date" id="task-date" />
+            <input
+              class="form-control"
+              type="date"
+              name="task-date"
+              id="task-date"
+              required
+              [(ngModel)]="newTask.dueDate"
+            />
           </div>
           <div class="col-4">
-            <input class="form-control" type="text" name="tags" id="tags"
-              placeholder="Enter comma separated tags here" />
+            <input
+              class="form-control"
+              type="text"
+              name="tags"
+              id="tags"
+              placeholder="Enter comma separated tags here"
+              [(ngModel)]="newTask.tags"
+              required
+            />
           </div>
           <div class="col-auto">
-            <button type="button" class="btn btn-success">Add Task</button>
+            <button
+              *ngIf="newTask.itemId === 0"
+              type="button"
+              (click)="onSubmitNewTask(myForm)"
+              class="btn btn-success"
+            >
+              Add Task
+            </button>
+            <button
+              *ngIf="!(newTask.itemId === 0)"
+              type="button"
+              (click)="updateTask()"
+              class="btn btn-success"
+            >
+              Update Task
+            </button>
           </div>
         </div>
       </form>
@@ -29,57 +76,130 @@
     <section role="region" class="todolist" aria-labelledby="todo-list">
       <div class="main-filter row mb-3">
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#tagslistadded"
-            aria-expanded="false" aria-controls="tagslistadded">
+          <button
+            type="button"
+            class="btn"
+            data-bs-toggle="collapse"
+            data-bs-target="#tagslistadded"
+            aria-expanded="false"
+            aria-controls="tagslistadded"
+            (click)="toggleCollapse('tags')"
+            [ngClass]="tagsShow == 'tags' ? 'btn-primary' : 'btn-secondary'"
+          >
             Filter By Tags
           </button>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary">Show All</button>
+          <button
+            type="button"
+            class="btn"
+            (click)="toggleCollapse('show')"
+            [ngClass]="tagsShow == 'show' ? 'btn-primary' : 'btn-secondary'"
+          >
+            Show All
+          </button>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary">
+          <button
+            type="button"
+            class="btn"
+            (click)="toggleCollapse('completed')"
+            [ngClass]="
+              tagsShow == 'completed' ? 'btn-primary' : 'btn-secondary'
+            "
+          >
             Show Completed
           </button>
         </div>
       </div>
-      <div class="collapse" id="tagslistadded">
+      <div
+        class="collapse"
+        id="tagslistadded"
+        [class.show]="tagsShow == 'tags'"
+      >
         <span *ngFor="let tag of tagsList">
-          <button type="button" class="btn btn-secondary m-1">{{tag}}</button>
+          <button
+            type="button"
+            class="btn m-1"
+            [ngClass]="tagsSelected == tag ? 'btn-primary' : 'btn-secondary'"
+            (click)="tagSelected(tag)"
+          >
+            {{ tag }}
+          </button>
         </span>
       </div>
-      <div class="table-responsive">
+      <div class="table-responsive" *ngIf="taskList.length">
         <table class="table table-dark caption-top table-striped">
           <caption>
             List of Tasks
           </caption>
           <thead>
-            <th>Index</th>
-            <th>Task Name</th>
-            <th>Due Date</th>
-            <th>Tags</th>
+            <tr>
+              <th>Index</th>
+              <th>Task Name</th>
+              <th>Due Date</th>
+              <th>Tags</th>
+            </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let task of task; let i = index; let last = last">
-              <td>{{ task.itemId }}</td>
-              <td class="d-flex justify-content-between align-items-center">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" type="checkbox" name="taskName" id="taskName" />
-                  <label class="form-check-label" for="taskName">{{ task.taskName }} </label>
+            <!-- @for (task of taskList; track 'itemId'; let i=$index) {
+              {{task.taskName}} {{i}}
+            } -->
+            <tr *ngFor="let task of taskList; let i = index; let last = last">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      type="checkbox"
+                      name="taskName"
+                      id="taskName"
+                    />
+                    <label class="form-check-label" for="taskName"
+                      >{{ task.taskName }}
+                    </label>
+                  </div>
+                  <i
+                    *ngIf="task.isCompleted"
+                    class="fa-regular fa-circle-check fa-lg"
+                    style="color: #63e6be"
+                  ></i>
+                  <i
+                    *ngIf="!task.isCompleted"
+                    class="fa-regular fa-circle-xmark fa-lg"
+                    style="color: #d83803"
+                  ></i>
                 </div>
-                <i *ngIf="task.isCompleted" class="fa-regular fa-circle-check fa-lg" style="color: #63e6be"></i>
-                <i *ngIf="!task.isCompleted" class="fa-regular fa-circle-xmark fa-lg" style="color: #d83803"></i>
-                
               </td>
               <td>
-                {{ task.dueDate }}
+                {{ task.dueDate | date : "dd-MM-YYYY" }}
               </td>
               <td>
-                <span *ngFor="let tag of task.tags" class="badge text-bg-secondary">{{ tag }}</span>
+                <!-- <span class="badge text-bg-secondary">{{ task.tags }}</span> -->
+                <button
+                  type="submit"
+                  class="btn btn-warning btn-sm"
+                  (click)="onEdit(task)"
+                >
+                  Edit Task
+                </button>
+
+                <button
+                  type="submit"
+                  class="btn btn-warning btn-sm mx-3"
+                  (click)="deleteTask(task.itemId)"
+                >
+                  Delete Task
+                </button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+      <div class="table-responsive" *ngIf="!taskList.length">
+        <p>No Tasks available to display, Please select other tags</p>
       </div>
     </section>
   </main>
