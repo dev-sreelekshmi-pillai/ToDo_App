@@ -7,67 +7,33 @@
   </header>
   <main class="container" id="main-content">
     <section role="form" class="addtodo row mb-3" aria-labelledby="todo-form">
-      <form #myForm="ngForm" >
+      <form #myForm="ngForm" id="form-data">
         <div class="row mb-3 p-2">
-          <input
-            required
-            type="text"
-            name="taskname"
-            id="taskname"
-            placeholder="Add a new task : Name"
-            class="form-control"
-            [(ngModel)]="newTask.taskName"
-          />
+          <input required type="text" name="taskname" id="taskname" placeholder="Add a new task : Name"
+            class="form-control" ngModel />
         </div>
         <div class="row mb-3 p-2">
-          <textarea
-            name="taskdesc"
-            id="taskdesc"
-            cols="30"
-            rows="3"
-            class="form-control"
-            placeholder="Task Description"
-            [(ngModel)]="newTask.taskDescription"
-          ></textarea>
+          <textarea name="taskdesc" id="taskdesc" cols="30" rows="3" class="form-control" placeholder="Task Description"
+            ngModel></textarea>
         </div>
         <div class="row g-3">
           <div class="col-auto">
-            <input
-              class="form-control"
-              type="date"
-              name="task-date"
-              id="task-date"
-              required
-              [(ngModel)]="newTask.dueDate"
-            />
+            <input class="form-control" type="date" name="task-date" id="task-date" required ngModel />
           </div>
           <div class="col-4">
-            <input
-              class="form-control"
-              type="text"
-              name="tags"
-              id="tags"
-              placeholder="Enter comma separated tags here"
-              [(ngModel)]="newTask.tags"
-              required
-            />
+            <input class="form-control" type="text" name="tags" id="tags" placeholder="Enter comma separated tags here"
+              ngModel required />
           </div>
           <div class="col-auto">
-            <button
-              *ngIf="newTask.itemId === 0"
-              type="button"
-              (click)="onSubmitNewTask(myForm)"
-              class="btn btn-success"
-            >
+            <button *ngIf="newTask.itemId === 0" type="button" (click)="onSubmitNewTask(myForm)"
+              class="btn btn-success">
               Add Task
             </button>
-            <button
-              *ngIf="!(newTask.itemId === 0)"
-              type="button"
-              (click)="updateTask()"
-              class="btn btn-success"
-            >
+            <button *ngIf="!(newTask.itemId === 0)" type="button" (click)="updateTask(myForm)" class="btn btn-success">
               Update Task
+            </button>
+            <button type="" (click)="clear(myForm)" class="btn btn-success mx-2">
+              Clear
             </button>
           </div>
         </div>
@@ -76,54 +42,30 @@
     <section role="region" class="todolist" aria-labelledby="todo-list">
       <div class="main-filter row mb-3">
         <div class="col-auto">
-          <button
-            type="button"
-            class="btn"
-            data-bs-toggle="collapse"
-            data-bs-target="#tagslistadded"
-            aria-expanded="false"
-            aria-controls="tagslistadded"
-            (click)="toggleCollapse('tags')"
-            [ngClass]="tagsShow == 'tags' ? 'btn-primary' : 'btn-secondary'"
-          >
+          <button type="button" class="btn" data-bs-toggle="collapse" data-bs-target="#tagslistadded"
+            aria-expanded="false" aria-controls="tagslistadded" (click)="toggleCollapse('tags')"
+            [ngClass]="tagsShow == 'tags' ? 'btn-primary' : 'btn-secondary'">
             Filter By Tags
           </button>
         </div>
         <div class="col-auto">
-          <button
-            type="button"
-            class="btn"
-            (click)="toggleCollapse('show')"
-            [ngClass]="tagsShow == 'show' ? 'btn-primary' : 'btn-secondary'"
-          >
+          <button type="button" class="btn" (click)="toggleCollapse('show')"
+            [ngClass]="tagsShow == 'show' ? 'btn-primary' : 'btn-secondary'">
             Show All
           </button>
         </div>
         <div class="col-auto">
-          <button
-            type="button"
-            class="btn"
-            (click)="toggleCollapse('completed')"
-            [ngClass]="
+          <button type="button" class="btn" (click)="toggleCollapse('completed')" [ngClass]="
               tagsShow == 'completed' ? 'btn-primary' : 'btn-secondary'
-            "
-          >
+            ">
             Show Completed
           </button>
         </div>
       </div>
-      <div
-        class="collapse"
-        id="tagslistadded"
-        [class.show]="tagsShow == 'tags'"
-      >
+      <div class="collapse" id="tagslistadded" [class.show]="tagsShow == 'tags'">
         <span *ngFor="let tag of tagsList">
-          <button
-            type="button"
-            class="btn m-1"
-            [ngClass]="tagsSelected == tag ? 'btn-primary' : 'btn-secondary'"
-            (click)="tagSelected(tag)"
-          >
+          <button type="button" class="btn m-1" [ngClass]="tagsSelected == tag ? 'btn-success' : 'btn-secondary'"
+            (click)="tagSelected(tag)">
             {{ tag }}
           </button>
         </span>
@@ -139,6 +81,7 @@
               <th>Task Name</th>
               <th>Due Date</th>
               <th>Tags</th>
+              <th>Update</th>
             </tr>
           </thead>
           <tbody>
@@ -150,49 +93,30 @@
               <td>
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      type="checkbox"
-                      name="taskName"
-                      id="taskName"
-                    />
-                    <label class="form-check-label" for="taskName"
-                      >{{ task.taskName }}
+                    <input *ngIf="!task.isCompleted" class="form-check-input" type="checkbox" type="checkbox"
+                      name="taskName" id="taskName" />
+                    <label class="form-check-label" for="taskName">{{ task.taskName | titlecase }}
                     </label>
+                    <i *ngIf="task.isCompleted" class="fa-regular fa-circle-check fa-lg ms-3"
+                      style="color: #63e6be"></i>
                   </div>
-                  <i
-                    *ngIf="task.isCompleted"
-                    class="fa-regular fa-circle-check fa-lg"
-                    style="color: #63e6be"
-                  ></i>
-                  <i
-                    *ngIf="!task.isCompleted"
-                    class="fa-regular fa-circle-xmark fa-lg"
-                    style="color: #d83803"
-                  ></i>
                 </div>
               </td>
               <td>
                 {{ task.dueDate | date : "dd-MM-YYYY" }}
               </td>
+              <td class="align-items-center">
+                <div *ngFor="let tag of task.tags.split(',')" class="badge text-bg-danger me-1">
+                  {{ tag }}
+                </div>
+              </td>
               <td>
-                <!-- <span class="badge text-bg-secondary">{{ task.tags }}</span> -->
-                <button
-                  type="submit"
-                  class="btn btn-warning btn-sm"
-                  (click)="onEdit(task)"
-                >
-                  Edit Task
-                </button>
-
-                <button
-                  type="submit"
-                  class="btn btn-warning btn-sm mx-3"
-                  (click)="deleteTask(task.itemId)"
-                >
-                  Delete Task
-                </button>
+                <div class="d-flex align-items-center">
+                  <i *ngIf="!task.isCompleted" class="fa-regular fa-pen-to-square fa-lg me-2"
+                    (click)="onEdit(task, myForm)" style="color: yellow; cursor: pointer"></i>
+                  <i class="fa-regular fa-circle-xmark fa-lg" (click)="deleteTask(task.itemId)"
+                    style="color: #d83803; cursor: pointer"></i>
+                </div>
               </td>
             </tr>
           </tbody>
